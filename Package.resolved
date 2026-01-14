@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "ios-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/skyway/ios-sdk",
+      "state" : {
+        "revision" : "4ff5bbb24c12c1124b7d0e2de094d87e4f6ea328",
+        "version" : "3.2.0"
+      }
+    }
+  ],
+  "version" : 2
+}
