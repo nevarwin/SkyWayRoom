@@ -1,0 +1,22 @@
+{
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:SkyWayRoom}",
+      "name": "Debug SkyWayRoomApp",
+      "program": "${workspaceFolder:SkyWayRoom}/.build/debug/SkyWayRoomApp",
+      "preLaunchTask": "swift: Build Debug SkyWayRoomApp"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:SkyWayRoom}",
+      "name": "Release SkyWayRoomApp",
+      "program": "${workspaceFolder:SkyWayRoom}/.build/release/SkyWayRoomApp",
+      "preLaunchTask": "swift: Build Release SkyWayRoomApp"
+    }
+  ]
+}

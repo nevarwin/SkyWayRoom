@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		97A7E1382F17F4540067DC97 /* SkyWayRoom in Frameworks */ = {isa = PBXBuildFile; productRef = 97A7E1372F17F4540067DC97 /* SkyWayRoom */; };
+		97EE86E22F1D143000881301 /* RoomManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EE86DD2F1CF99700881301 /* RoomManager.swift */; };
+		97EE86E42F1D144000881301 /* SkyWayVideoViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97EE86E32F1D144000881301 /* SkyWayVideoViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,6 +33,8 @@
 		97A7E10C2F17F2AA0067DC97 /* SkyWayRoom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SkyWayRoom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		97A7E1192F17F2AC0067DC97 /* SkyWayRoomTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkyWayRoomTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		97A7E1232F17F2AC0067DC97 /* SkyWayRoomUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SkyWayRoomUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		97EE86DD2F1CF99700881301 /* RoomManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomManager.swift; sourceTree = "<group>"; };
+		97EE86E32F1D144000881301 /* SkyWayVideoViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SkyWayVideoViews.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -80,6 +84,7 @@
 		97A7E1032F17F2AA0067DC97 = {
 			isa = PBXGroup;
 			children = (
+				97EE86DF2F1CF99700881301 /* Sources */,
 				97A7E10E2F17F2AA0067DC97 /* SkyWayRoom */,
 				97A7E11C2F17F2AC0067DC97 /* SkyWayRoomTests */,
 				97A7E1262F17F2AC0067DC97 /* SkyWayRoomUITests */,
@@ -95,6 +100,23 @@
 				97A7E1232F17F2AC0067DC97 /* SkyWayRoomUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		97EE86DE2F1CF99700881301 /* SkyWayClient */ = {
+			isa = PBXGroup;
+			children = (
+				97EE86E32F1D144000881301 /* SkyWayVideoViews.swift */,
+				97EE86DD2F1CF99700881301 /* RoomManager.swift */,
+			);
+			path = SkyWayClient;
+			sourceTree = "<group>";
+		};
+		97EE86DF2F1CF99700881301 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				97EE86DE2F1CF99700881301 /* SkyWayClient */,
+			);
+			path = Sources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -245,6 +267,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				97EE86E42F1D144000881301 /* SkyWayVideoViews.swift in Sources */,
+				97EE86E22F1D143000881301 /* RoomManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

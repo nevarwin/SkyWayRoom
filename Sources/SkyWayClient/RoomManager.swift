@@ -7,6 +7,7 @@ public protocol RoomManagerDelegate: AnyObject {
     func roomManager(_ manager: RoomManager, didRemoveRemotePublication publication: RoomPublication)
     func roomManager(_ manager: RoomManager, memberDidJoin member: RoomMember)
     func roomManager(_ manager: RoomManager, memberDidLeave member: RoomMember)
+    func roomManager(_ manager: RoomManager, didReceiveData data: Data, from member: RoomMember)
 }
 
 public class RoomManager: ObservableObject {
@@ -24,16 +25,19 @@ public class RoomManager: ObservableObject {
     private var audioSource: MicrophoneAudioSource?
     private(set) var localAudioStream: LocalAudioStream?
     private(set) var localVideoStream: LocalVideoStream?
+    private(set) var localDataStream: LocalDataStream?
     
     // MARK: - Publications & Subscriptions
     private var audioPublication: RoomPublication?
     private var videoPublication: RoomPublication?
+    private var dataPublication: RoomPublication?
     private var subscriptions: [String: RoomSubscription] = [:] // keyed by publication ID
     
     // MARK: - Published State
     @Published public var isJoined: Bool = false
     @Published public var remoteStreams: [Stream] = []
     @Published public var remotePublications: [RoomPublication] = []
+    @Published public var lastReceivedMessage: String = ""
     
     public init() {}
     
@@ -138,6 +142,7 @@ public class RoomManager: ObservableObject {
         localVideoStream = nil
         audioPublication = nil
         videoPublication = nil
+        dataPublication = nil
         localMember = nil
         room = nil
         
@@ -157,6 +162,9 @@ public class RoomManager: ObservableObject {
         
         // Create video stream from camera
         self.localVideoStream = CameraVideoSource.shared().createStream()
+        
+        // Create data stream
+        self.localDataStream = LocalDataStream(name: "data_stream")
     }
     
     // MARK: - Publishing
@@ -182,6 +190,29 @@ public class RoomManager: ObservableObject {
             videoOptions.type = publicationType
             self.videoPublication = try await member.publish(videoStream, options: videoOptions)
         }
+        
+        // Publish data stream (P2P Only as per limitation)
+        if !useSFU, let dataStream = localDataStream {
+            let dataOptions = RoomPublicationOptions()
+            dataOptions.type = .P2P // Explicitly P2P
+            self.dataPublication = try await member.publish(dataStream, options: dataOptions)
+        }
+    }
+    
+    // MARK: - Data Stream Methods
+    
+    public func sendData(_ data: String) async throws {
+        guard let dataStream = localDataStream else {
+             throw SkyWayError.streamNotCreated
+        }
+        try await dataStream.write(data)
+    }
+    
+    public func sendData(_ data: Data) async throws {
+        guard let dataStream = localDataStream else {
+             throw SkyWayError.streamNotCreated
+        }
+        try await dataStream.write(data)
     }
     
     /// Publish only audio stream
@@ -224,6 +255,9 @@ public class RoomManager: ObservableObject {
         let subscription = try await member.subscribe(publicationId: publicationId, options: nil)
         subscriptions[publicationId] = subscription
         
+        // Setup handlers for data streams
+        setupSubscriptionEventHandlers(subscription: subscription)
+        
         // Add the stream to remote streams
         if let stream = subscription.stream {
             await MainActor.run {
@@ -232,6 +266,30 @@ public class RoomManager: ObservableObject {
         }
         
         return subscription
+    }
+    
+    private func setupSubscriptionEventHandlers(subscription: RoomSubscription) {
+        if let dataStream = subscription.stream as? RemoteDataStream {
+             dataStream.onStringReceivedHandler = { [weak self] string, time in
+                 guard let self = self, let publisher = subscription.publication.publisher else { return }
+                 if let data = string.data(using: .utf8) {
+                     Task { @MainActor in
+                         self.lastReceivedMessage = "\(publisher.name ?? "Unknown"): \(string)"
+                         self.delegate?.roomManager(self, didReceiveData: data, from: publisher)
+                     }
+                 }
+             }
+             
+            dataStream.onDataReceivedHandler = { [weak self] data, time in
+                guard let self = self, let publisher = subscription.publication.publisher else { return }
+                Task { @MainActor in
+                    if let string = String(data: data, encoding: .utf8) {
+                        self.lastReceivedMessage = "\(publisher.name ?? "Unknown"): \(string)"
+                    }
+                    self.delegate?.roomManager(self, didReceiveData: data, from: publisher)
+                }
+            }
+        }
     }
     
     /// Unsubscribe from a publication
@@ -339,9 +397,17 @@ public class RoomManager: ObservableObject {
         let existingIds = Set(remotePublications.map { $0.id })
         let newIds = Set(newPublications.map { $0.id })
         
+        // Publications to subscribe to (new ones)
+        let publicationsToSubscribe = newPublications.filter { !existingIds.contains($0.id) }
+        
         // Notify about new publications
-        for publication in newPublications where !existingIds.contains(publication.id) {
+        for publication in publicationsToSubscribe {
             delegate?.roomManager(self, didReceiveRemotePublication: publication)
+            
+            // Auto-subscribe
+            Task {
+                try? await self.subscribe(publicationId: publication.id)
+            }
         }
         
         // Notify about removed publications
